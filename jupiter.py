@@ -28,15 +28,19 @@ class Moons:
     
     def plot(self, x, y):
         
+        self.data = self.data.apply(pd.to_numeric, errors='coerce')
+        corr_matrix = self.data.corr()
         
-        plt.scatter(self.data[x], self.data[y])
+        plt.scatter(self.data[x], self.data[y], label=f'Correlation: {corr_matrix[x][y].round(3)}')
         plt.xlabel(x)
         plt.ylabel(y)
+        plt.legend()
         plt.show()
     
     def correlation_heatmap(self):
         
         self.data = self.data.apply(pd.to_numeric, errors='coerce')
+        
         corr_matrix = self.data.corr()
         
         sns.heatmap(corr_matrix, annot=True, cmap='viridis')
@@ -51,9 +55,10 @@ class Moons:
         var_2 = input("Variable 2")
         
         if var_1 and var_2 in self.jupiter_data.iloc[0]:
-            variable_correlation = corr_matrix[var_1][var_2]
+            variable_correlation = corr_matrix[var_1][var_2].round(3)
         
         return variable_correlation
+       
        
         
     def column_average(self):
@@ -67,6 +72,7 @@ class Moons:
         
         averages_transposed = pd.DataFrame(column_averages).transpose()
         column_average_df = averages_transposed.rename(columns={0: "Average value"})
+        column_average_df['Average value'] = column_average_df['Average value']
         
         display (column_average_df)
        
@@ -80,12 +86,7 @@ class Moons:
                 moon_info = pd.DataFrame(self.jupiter_data.loc[x])
                 return moon_info
     
-            
-
-        
-        
     def train(self):
-        
         from sklearn.model_selection import train_test_split
         from sklearn.metrics import mean_squared_error, r2_score
         from sklearn import linear_model
@@ -97,22 +98,39 @@ class Moons:
         Y = self.data["period_variable"]
         
         model = linear_model.LinearRegression()
-        
+            
         x_train, x_test, y_train, y_test = train_test_split(X, Y , test_size =0.3 , random_state=42)
+
+        
         model.fit(x_train, y_train)
-        pred = model.predict(x_test)
         
-        fig, ax = plt.subplots()
-        ax.scatter(X,Y)
-        ax.plot(x_test, pred)
+        training_pred_y = model.predict(x_train)
+        testing_pred_y = model.predict(x_test)
         
-        
+        plt.figure()
+        plt.scatter(X, Y)
+        plt.plot(x_test, testing_pred_y)
         plt.show()
-        print(f"The R2 score is: {r2_score(y_test,pred)}")
         
         jupiter_mass = (4 * np.pi**2) / (model.coef_[0]*6.67e-11)
-        return jupiter_mass
+        print(f"The R2 score is: {r2_score(y_test,testing_pred_y)}")
         
+        training_residuals = y_train - training_pred_y
+        testing_residuals = y_test - testing_pred_y
+            
+        plt.scatter(x_train, training_residuals, color='blue', label='Training Residuals', alpha=0.5)
+        plt.scatter(x_test, testing_residuals, color='red', label='Testing Residuals')
+        plt.show()
+       
+        return jupiter_mass
+    
+    
+ 
+    
+    
+        
+
+      
         
 
 
