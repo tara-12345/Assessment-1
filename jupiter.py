@@ -36,6 +36,15 @@ class Moons:
         plt.ylabel(y)
         plt.legend()
         plt.show()
+        
+    def distributions(self):
+        self.data = self.data.apply(pd.to_numeric, errors='coerce')
+        number_columns = self.data.select_dtypes(['float64', 'int64']).columns
+
+        for col in number_columns:
+            sns.histplot(data=self.data, x=col, bins=20)
+            plt.show()
+        
     
     def correlation_heatmap(self):
         
@@ -58,8 +67,7 @@ class Moons:
             variable_correlation = corr_matrix[var_1][var_2].round(3)
         
         return variable_correlation
-       
-       
+
         
     def column_average(self):
 
